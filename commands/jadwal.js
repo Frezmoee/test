@@ -109,13 +109,27 @@ async function sendOutfitImage(sock, jid, dayKey, quotedMsg) {
 // serta versi dengan prefix titik: ".baju", ".jadwalbaju", ".baju senin", ".olahraga rabu", ".hapus olahraga rabu"
 async function jadwalCommand(sock, chatId, messageUpdate) {
   try {
+    if (!messageUpdate || !messageUpdate.messages || !Array.isArray(messageUpdate.messages)) {
+      console.error("Invalid messageUpdate object:", JSON.stringify(messageUpdate));
+      return;
+    }
+    
     const { messages, type } = messageUpdate;
     if (type !== 'notify') return;
+    
     for (const msg of messages) {
+      if (!msg || !msg.message) {
+        console.log("Skipping invalid message in jadwalCommand");
+        continue;
+      }
+      
       const m = msg.message;
-      const jid = msg.key.remoteJid;
-      if (!m) continue;
-      if (jid?.endsWith("@broadcast")) continue;
+      const jid = msg.key?.remoteJid || chatId;
+      if (!jid) {
+        console.error("No valid jid found in message");
+        continue;
+      }
+      if (jid.endsWith("@broadcast")) continue;
 
       const text =
         m.conversation ||
@@ -123,10 +137,17 @@ async function jadwalCommand(sock, chatId, messageUpdate) {
         m?.imageMessage?.caption ||
         m?.videoMessage?.caption ||
         "";
-      if (!text) continue;
+      
+      // Skip if no text content
+      if (!text) {
+        console.log("Skipping message with no text content");
+        continue;
+      }
 
       const raw = text.trim();
       const lower = raw.toLowerCase().trim();
+      
+      console.log(`Processing jadwal command: "${lower}"`); // Debug log
 
       // help/menu
       if (lower === ".jadwal") {

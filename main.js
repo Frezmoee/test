@@ -795,13 +795,20 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 
             // Handle jadwal commands (.jadwal, .baju, .olahraga, .hapusolahraga)
             case userMessage.startsWith('.jadwal') || userMessage.startsWith('.baju') || userMessage.startsWith('.olahraga') || userMessage.startsWith('.hapusolahraga'):
-                // Create a messageUpdate-like object for jadwalCommand
-                const jadwalMessageUpdate = {
-                    messages: [message],
-                    type: 'notify'
-                };
-                await jadwalCommand(sock, chatId, jadwalMessageUpdate);
-                commandExecuted = true;
+                try {
+                    // Create a messageUpdate-like object for jadwalCommand
+                    const jadwalMessageUpdate = {
+                        messages: [message],
+                        type: 'notify'
+                    };
+                    await jadwalCommand(sock, message.key.remoteJid, jadwalMessageUpdate);
+                    commandExecuted = true;
+                } catch (error) {
+                    console.error("Error in jadwal command:", error);
+                    await sock.sendMessage(message.key.remoteJid, { 
+                        text: '❌ Error processing jadwal command. Please try again.' 
+                    });
+                }
                 break;
 
             default:
