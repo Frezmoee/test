@@ -109,7 +109,7 @@ async function sendOutfitImage(sock, jid, dayKey, quotedMsg) {
 // serta versi dengan prefix titik: ".baju", ".jadwalbaju", ".baju senin", ".olahraga rabu", ".hapus olahraga rabu"
 async function jadwalCommand(sock, chatId, message) {
   try {
-    const { messages, type } = messageUpdate;
+    const { messages, type } = message;
     if (type !== 'notify') return;
     for (const msg of messages) {
       const m = msg.message;
@@ -129,18 +129,38 @@ async function jadwalCommand(sock, chatId, message) {
       const lower = raw.toLowerCase().trim();
 
       // help/menu
-      
+      if (lower === ".jadwal") {
+        const olahragaDays = loadOlahragaDays();
+        let olahragaText = olahragaDays.length > 0 
+          ? `\n\nHari olahraga: ${olahragaDays.map(capitalize).join(", ")}`
+          : "\n\nBelum ada jadwal olahraga.";
+        
+        await sock.sendMessage(jid, { 
+          text: `*📅 Jadwal Baju*\n\nPerintah yang tersedia:\n`.concat(
+            `• .jadwal - Menampilkan menu ini\n`,
+            `• .baju - Menampilkan jadwal baju hari ini\n`,
+            `• .baju<hari> - Menampilkan jadwal baju untuk hari tertentu\n`,
+            `  Contoh: .bajusenin, .bajuselasa\n`,
+            `• .olahraga<hari> - Menambahkan hari olahraga\n`,
+            `  Contoh: .olahragakamis\n`,
+            `• .hapusolahraga<hari> - Menghapus hari olahraga\n`,
+            `  Contoh: .hapusolahragakamis`,
+            olahragaText
+          )
+        }, { quoted: msg });
+        continue;
+      }
 
       // handle single keyword today: baju / jadwalbaju
-      if (content === ".jadwalbaju" || content === ".baju") {
+      if (lower === ".jadwalbaju" || lower === ".baju") {
         const day = todayNameID();
         await sendOutfitImage(sock, jid, day, msg);
         continue;
       }
 
       // baju <hari> or jadwal <hari>
-      if (content.startsWith(".baju") || content.startsWith(".jadwal")) {
-        const dayParsed = parseDayFromText(content);
+      if (lower.startsWith(".baju")) {
+        const dayParsed = parseDayFromText(lower);
         if (dayParsed) {
           await sendOutfitImage(sock, jid, dayParsed, msg);
         } else {
@@ -150,8 +170,8 @@ async function jadwalCommand(sock, chatId, message) {
       }
 
       // olahraga <hari> -> tambah
-      if (content.startsWith(".olahraga")) {
-        const dayParsed = parseDayFromText(content);
+      if (lower.startsWith(".olahraga")) {
+        const dayParsed = parseDayFromText(lower);
         if (dayParsed) {
           if (dayParsed === "sabtu" || dayParsed === "minggu") {
             await sock.sendMessage(jid, { text: `📌 Hari ${capitalize(dayParsed)} adalah hari libur, tidak bisa ditambahkan sebagai hari olahraga.` }, { quoted: msg });
@@ -172,9 +192,9 @@ async function jadwalCommand(sock, chatId, message) {
       }
 
       // hapus olahraga <hari>
-      if (content.startsWith(".hapusolahraga") {
+      if (lower.startsWith(".hapusolahraga")) {
         // support both "hapus olahraga rabu" and "hapusolahraga rabu" (typo tolerance)
-        const dayParsed = parseDayFromText(content);
+        const dayParsed = parseDayFromText(lower);
         if (dayParsed) {
           let days = loadOlahragaDays();
           if (days.includes(dayParsed)) {
@@ -185,7 +205,7 @@ async function jadwalCommand(sock, chatId, message) {
             await sock.sendMessage(jid, { text: `Hari ${capitalize(dayParsed)} tidak ada di jadwal olahraga.` }, { quoted: msg });
           }
         } else {
-          await sock.sendMessage(jid, { text: "Hari tidak dikenali. Contoh: hapus olahraga rabu" }, { quoted: msg });
+          await sock.sendMessage(jid, { text: "Hari tidak dikenali. Contoh: .hapusolahragarabu" }, { quoted: msg });
         }
         continue;
       }
