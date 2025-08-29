@@ -792,6 +792,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await autoreadCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
+                
+            // Handle jadwal commands (.jadwal, .baju, .olahraga, .hapusolahraga)
+            case userMessage.startsWith('.jadwal') || userMessage.startsWith('.baju') || userMessage.startsWith('.olahraga') || userMessage.startsWith('.hapusolahraga'):
+                await jadwalCommand.jadwalCommand(sock, chatId, messageUpdate);
+                commandExecuted = true;
+                break;
 
             default:
                 if (isGroup) {
