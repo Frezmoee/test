@@ -795,7 +795,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 
             // Handle jadwal commands (.jadwal, .baju, .olahraga, .hapusolahraga)
             case userMessage.startsWith('.jadwal') || userMessage.startsWith('.baju') || userMessage.startsWith('.olahraga') || userMessage.startsWith('.hapusolahraga'):
-                await jadwalCommand(sock, chatId, messageUpdate);
+                // Create a messageUpdate-like object for jadwalCommand
+                const jadwalMessageUpdate = {
+                    messages: [message],
+                    type: 'notify'
+                };
+                await jadwalCommand(sock, chatId, jadwalMessageUpdate);
                 commandExecuted = true;
                 break;
 
