@@ -314,9 +314,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await helpCommand(sock, chatId, message, global.channelLink);
                 commandExecuted = true;
                 break;
-            case userMessage.startWith('.baju'):
-                
-                
+            // Note: .baju commands are handled by the jadwal case above
             case userMessage === '.sticker' || userMessage === '.s':
                 await stickerCommand(sock, chatId, message);
                 commandExecuted = true;
@@ -852,13 +850,19 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-        console.error('❌ Error in message handler:', error.message);
+        console.error("\u274c Error in message handler:", error.message);
+        // Try to get chatId from message if available
+        const errorChatId = message?.key?.remoteJid;
         // Only try to send error message if we have a valid chatId
-        if (chatId) {
-            await sock.sendMessage(chatId, {
-                text: '❌ Failed to process command!',
-                ...channelInfo
-            });
+        if (errorChatId) {
+            try {
+                await sock.sendMessage(errorChatId, {
+                    text: "\u274c Failed to process command!",
+                    ...channelInfo
+                });
+            } catch (sendError) {
+                console.error("Failed to send error message:", sendError.message);
+            }
         }
     }
 }
