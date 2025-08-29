@@ -107,9 +107,9 @@ async function sendOutfitImage(sock, jid, dayKey, quotedMsg) {
 // handler untuk messages.upsert style Baileys
 // Mendukung: "baju", "jadwalbaju", "baju <hari>", "jadwal <hari>", "olahraga <hari>", "hapus olahraga <hari>"
 // serta versi dengan prefix titik: ".baju", ".jadwalbaju", ".baju senin", ".olahraga rabu", ".hapus olahraga rabu"
-async function jadwalCommand(sock, chatId, message) {
+async function jadwalCommand(sock, chatId, messageUpdate) {
   try {
-    const { messages, type } = message;
+    const { messages, type } = messageUpdate;
     if (type !== 'notify') return;
     for (const msg of messages) {
       const m = msg.message;
