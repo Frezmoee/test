@@ -14,7 +14,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const jadwalCommand = require('./commands/jadwal');
+const { jadwalCommand } = require('./commands/jadwal');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
 const banCommand = require('./commands/ban');
@@ -795,7 +795,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 
             // Handle jadwal commands (.jadwal, .baju, .olahraga, .hapusolahraga)
             case userMessage.startsWith('.jadwal') || userMessage.startsWith('.baju') || userMessage.startsWith('.olahraga') || userMessage.startsWith('.hapusolahraga'):
-                await jadwalCommand.jadwalCommand(sock, chatId, messageUpdate);
+                // Create a messageUpdate-like object for jadwalCommand
+                const jadwalMessageUpdate = {
+                    messages: [message],
+                    type: 'notify'
+                };
+                await jadwalCommand(sock, chatId, jadwalMessageUpdate);
                 commandExecuted = true;
                 break;
 
